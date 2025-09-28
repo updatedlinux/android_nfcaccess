@@ -786,9 +786,15 @@
                         
                         this.showRegisterStatus(errorMessage, 'error');
                     }
+                    
+                    // Ocultar botón de registrar tarjeta después de cualquier respuesta
+                    document.getElementById('registerCardBtn').classList.add('hidden');
                 } catch (error) {
                     console.error('Error de conexión en registro:', error);
                     this.showRegisterStatus('Error de conexión: ' + error.message, 'error');
+                    
+                    // Ocultar botón de registrar tarjeta también en caso de error de conexión
+                    document.getElementById('registerCardBtn').classList.add('hidden');
                 } finally {
                     this.showRegisterLoading(false);
                 }
