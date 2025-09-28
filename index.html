@@ -663,6 +663,9 @@
                         const responseData = await response.json();
                         console.log('Acceso registrado exitosamente:', responseData);
                         this.showStatus(`${accessType.charAt(0).toUpperCase() + accessType.slice(1)} registrada exitosamente`, 'success');
+                        
+                        // Ocultar botones de entrada/salida después del registro exitoso
+                        document.getElementById('accessButtons').classList.add('hidden');
                     } else {
                         const errorText = await response.text();
                         console.error('Error del servidor en acceso:', response.status, errorText);
