@@ -640,9 +640,12 @@
                 this.showLoading(true);
 
                 try {
+                    // Mapear los valores de la UI a los valores esperados por el backend
+                    const backendAccessType = accessType === 'entrada' ? 'ingreso' : 'salida';
+                    
                     const requestData = {
                         card_uid: this.currentCardUid,
-                        access_type: accessType,
+                        access_type: backendAccessType,
                         guard_user: this.guardUser
                     };
                     
