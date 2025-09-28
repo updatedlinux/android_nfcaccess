@@ -584,10 +584,18 @@
                     const response = await fetch(`https://api.bonaventurecclub.com/nfc_access/cards/owner/${uid}`);
                     
                     if (response.ok) {
-                        const data = await response.json();
-                        console.log('Datos del propietario recibidos:', data);
-                        this.displayCardInfo(data);
-                        this.showStatus('Tarjeta leída correctamente', 'success');
+                        const responseData = await response.json();
+                        console.log('Respuesta completa del servidor:', responseData);
+                        
+                        if (responseData.success && responseData.data) {
+                            console.log('Datos del propietario extraídos:', responseData.data);
+                            this.displayCardInfo(responseData);
+                            this.showStatus('Tarjeta leída correctamente', 'success');
+                        } else {
+                            console.error('Estructura de respuesta inesperada:', responseData);
+                            this.showStatus('Error: Estructura de respuesta inesperada del servidor', 'error');
+                            this.hideCardInfo();
+                        }
                     } else if (response.status === 404) {
                         this.showStatus('Tarjeta no registrada en el sistema', 'error');
                         this.hideCardInfo();
@@ -606,9 +614,12 @@
                 }
             }
 
-            displayCardInfo(data) {
-                document.getElementById('ownerName').textContent = data.name || 'No disponible';
-                document.getElementById('ownerEmail').textContent = data.email || 'No disponible';
+            displayCardInfo(responseData) {
+                // Extraer datos del objeto data dentro de la respuesta
+                const data = responseData.data || responseData;
+                
+                document.getElementById('ownerName').textContent = data.display_name || data.user_login || 'No disponible';
+                document.getElementById('ownerEmail').textContent = data.user_email || 'No disponible';
                 document.getElementById('ownerLabel').textContent = data.label || 'No disponible';
                 
                 document.getElementById('cardInfo').classList.remove('hidden');
