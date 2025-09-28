@@ -532,9 +532,9 @@
 
                     ndef.addEventListener('reading', async (event) => {
                         clearTimeout(timeout);
-                        console.log('Tarjeta NFC detectada:', event.message);
+                        console.log('Tarjeta NFC detectada:', event);
                         
-                        const uid = this.getUIDFromMessage(event.message);
+                        const uid = this.getUIDFromMessage(event);
                         if (uid) {
                             console.log('UID extraído:', uid);
                             this.currentCardUid = uid;
@@ -559,56 +559,46 @@
                 }
             }
 
-            getUIDFromMessage(message) {
-                // Para tarjetas MIFARE Classic, necesitamos extraer el UID correctamente
+            getUIDFromMessage(event) {
+                // Usar EXCLUSIVAMENTE el serialNumber del evento Web NFC
                 try {
-                    if (message.records && message.records.length > 0) {
-                        const record = message.records[0];
-                        
-                        // Intentar obtener UID del serial number si está disponible
-                        if (message.serialNumber) {
-                            return Array.from(message.serialNumber)
-                                .map(b => b.toString(16).padStart(2, '0'))
-                                .join('').toUpperCase();
-                        }
-                        
-                        // Si no hay serialNumber, intentar desde los datos del record
-                        if (record.data) {
-                            const dataArray = new Uint8Array(record.data);
-                            // Para MIFARE Classic, el UID puede estar en los primeros 4-7 bytes
-                            const uidBytes = dataArray.slice(0, Math.min(7, dataArray.length));
-                            return Array.from(uidBytes)
-                                .map(b => b.toString(16).padStart(2, '0'))
-                                .join('').toUpperCase();
-                        }
+                    if (event.serialNumber) {
+                        // Normalizar el UID: eliminar dos puntos y convertir a mayúsculas
+                        const normalizedUID = event.serialNumber.replace(/:/g, '').toUpperCase();
+                        console.log('UID detectado:', event.serialNumber);
+                        console.log('UID normalizado:', normalizedUID);
+                        return normalizedUID;
+                    } else {
+                        console.error('No se encontró serialNumber en el evento NFC');
+                        return null;
                     }
-                    
-                    // Fallback: generar un UID simulado para testing
-                    console.log('Generando UID simulado para testing');
-                    return 'TEST' + Date.now().toString(16).slice(-8).toUpperCase();
-                    
                 } catch (error) {
-                    console.error('Error extrayendo UID:', error);
+                    console.error('Error extrayendo UID del serialNumber:', error);
                     return null;
                 }
             }
 
             async getCardOwner(uid) {
                 try {
+                    console.log('Consultando propietario para UID:', uid);
                     const response = await fetch(`https://api.bonaventurecclub.com/nfc_access/cards/owner/${uid}`);
                     
                     if (response.ok) {
                         const data = await response.json();
+                        console.log('Datos del propietario recibidos:', data);
                         this.displayCardInfo(data);
                         this.showStatus('Tarjeta leída correctamente', 'success');
                     } else if (response.status === 404) {
                         this.showStatus('Tarjeta no registrada en el sistema', 'error');
                         this.hideCardInfo();
                     } else {
-                        this.showStatus('Error al consultar información de la tarjeta', 'error');
+                        const errorText = await response.text();
+                        console.error('Error del servidor:', response.status, errorText);
+                        this.showStatus(`Error del servidor (${response.status}): ${errorText || 'Error desconocido'}`, 'error');
                         this.hideCardInfo();
                     }
                 } catch (error) {
+                    console.error('Error de conexión:', error);
                     this.showStatus('Error de conexión: ' + error.message, 'error');
                     this.hideCardInfo();
                 } finally {
@@ -639,25 +629,33 @@
                 this.showLoading(true);
 
                 try {
+                    const requestData = {
+                        card_uid: this.currentCardUid,
+                        access_type: accessType,
+                        guard_user: this.guardUser
+                    };
+                    
+                    console.log('Enviando registro de acceso:', requestData);
+                    
                     const response = await fetch('https://api.bonaventurecclub.com/nfc_access/access/log', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({
-                            card_uid: this.currentCardUid,
-                            access_type: accessType,
-                            guard_user: this.guardUser
-                        })
+                        body: JSON.stringify(requestData)
                     });
 
                     if (response.ok) {
+                        const responseData = await response.json();
+                        console.log('Acceso registrado exitosamente:', responseData);
                         this.showStatus(`${accessType.charAt(0).toUpperCase() + accessType.slice(1)} registrada exitosamente`, 'success');
                     } else {
-                        const errorData = await response.json();
-                        this.showStatus('Error al registrar acceso: ' + (errorData.message || 'Error desconocido'), 'error');
+                        const errorText = await response.text();
+                        console.error('Error del servidor en acceso:', response.status, errorText);
+                        this.showStatus(`Error al registrar acceso (${response.status}): ${errorText || 'Error desconocido'}`, 'error');
                     }
                 } catch (error) {
+                    console.error('Error de conexión en acceso:', error);
                     this.showStatus('Error de conexión: ' + error.message, 'error');
                 } finally {
                     this.showLoading(false);
@@ -685,9 +683,9 @@
 
                     ndef.addEventListener('reading', async (event) => {
                         clearTimeout(timeout);
-                        console.log('Tarjeta NFC detectada para registro:', event.message);
+                        console.log('Tarjeta NFC detectada para registro:', event);
                         
-                        const uid = this.getUIDFromMessage(event.message);
+                        const uid = this.getUIDFromMessage(event);
                         if (uid) {
                             console.log('UID extraído para registro:', uid);
                             this.currentCardUid = uid;
@@ -732,26 +730,34 @@
                 this.showRegisterLoading(true);
 
                 try {
+                    const requestData = {
+                        wp_user_login: wpUserLogin,
+                        card_uid: this.currentCardUid,
+                        label: label
+                    };
+                    
+                    console.log('Enviando datos de registro:', requestData);
+                    
                     const response = await fetch('https://api.bonaventurecclub.com/nfc_access/cards/register', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({
-                            wp_user_login: wpUserLogin,
-                            card_uid: this.currentCardUid,
-                            label: label
-                        })
+                        body: JSON.stringify(requestData)
                     });
 
                     if (response.ok) {
+                        const responseData = await response.json();
+                        console.log('Registro exitoso:', responseData);
                         this.showRegisterStatus('Tarjeta registrada exitosamente', 'success');
                         this.clearRegisterForm();
                     } else {
-                        const errorData = await response.json();
-                        this.showRegisterStatus('Error al registrar tarjeta: ' + (errorData.message || 'Error desconocido'), 'error');
+                        const errorText = await response.text();
+                        console.error('Error del servidor en registro:', response.status, errorText);
+                        this.showRegisterStatus(`Error al registrar tarjeta (${response.status}): ${errorText || 'Error desconocido'}`, 'error');
                     }
                 } catch (error) {
+                    console.error('Error de conexión en registro:', error);
                     this.showRegisterStatus('Error de conexión: ' + error.message, 'error');
                 } finally {
                     this.showRegisterLoading(false);
