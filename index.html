@@ -771,7 +771,20 @@
                     } else {
                         const errorText = await response.text();
                         console.error('Error del servidor en registro:', response.status, errorText);
-                        this.showRegisterStatus(`Error al registrar tarjeta (${response.status}): ${errorText || 'Error desconocido'}`, 'error');
+                        
+                        // Intentar extraer el mensaje del JSON de error
+                        let errorMessage = 'Error desconocido';
+                        try {
+                            const errorData = JSON.parse(errorText);
+                            if (errorData.message) {
+                                errorMessage = errorData.message;
+                            }
+                        } catch (e) {
+                            // Si no es JSON válido, usar el texto completo
+                            errorMessage = errorText || 'Error desconocido';
+                        }
+                        
+                        this.showRegisterStatus(errorMessage, 'error');
                     }
                 } catch (error) {
                     console.error('Error de conexión en registro:', error);
