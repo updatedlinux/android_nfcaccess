@@ -1,0 +1,100 @@
+{
+  "name": "Control de Acceso Vehicular - Bonaventure",
+  "short_name": "Acceso NFC",
+  "description": "Sistema de control de acceso vehicular con tecnología NFC para el condominio Bonaventure",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "dir": "ltr",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Pantalla principal del sistema de acceso"
+    }
+  ],
+  "features": [
+    "cross-platform",
+    "nfc"
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+nfc",
+      "url": "/?nfc=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "text/csv": [".csv"],
+        "application/json": [".json"]
+      }
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Lectura de Tarjeta",
+      "short_name": "Lectura",
+      "description": "Acceso rápido al módulo de lectura de tarjetas NFC",
+      "url": "/?module=reading",
+      "icons": [
+        {
+          "src": "https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Registro de Tarjeta",
+      "short_name": "Registro",
+      "description": "Acceso rápido al módulo de registro de nuevas tarjetas",
+      "url": "/?module=registration",
+      "icons": [
+        {
+          "src": "https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

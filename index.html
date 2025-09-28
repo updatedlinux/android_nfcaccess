@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Acceso Vehicular - Bonaventure</title>
+    <meta name="description" content="Sistema de control de acceso vehicular con NFC">
+    <meta name="theme-color" content="#1976d2">
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Control Acceso">
+    <link rel="apple-touch-icon" href="https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1.png">
+    
+    <!-- Material Design Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 500;
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .modules {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .module {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .module-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: #1976d2;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #1976d2, #42a5f5);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin: 10px 0;
+            box-shadow: 0 4px 16px rgba(25, 118, 210, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #4caf50, #66bb6a);
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f44336, #ef5350);
+            box-shadow: 0 4px 16px rgba(244, 67, 54, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #1976d2;
+        }
+
+        .card-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #1976d2;
+        }
+
+        .card-info h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .card-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #4caf50;
+        }
+
+        .status-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #f44336;
+        }
+
+        .status-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #2196f3;
+        }
+
+        .access-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1976d2;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .nfc-status {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+            color: #e65100;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .nfc-status.supported {
+            background: #e8f5e8;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+
+        .nfc-status.not-supported {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .modules {
+                grid-template-columns: 1fr;
+            }
+            
+            .title {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <img src="https://bonaventurecclub.com/wp-content/uploads/2025/09/cropped-1.png" 
+                 alt="Logo Bonaventure" class="logo">
+            <h1 class="title">Control de Acceso Vehicular</h1>
+            <p class="subtitle">Sistema de gestión con tecnología NFC</p>
+        </div>
+
+        <!-- NFC Status -->
+        <div id="nfcStatus" class="nfc-status">
+            <i class="material-icons">nfc</i>
+            Verificando soporte NFC...
+        </div>
+
+        <!-- Modules -->
+        <div class="modules">
+            <!-- Module 1: Card Reading -->
+            <div class="module">
+                <h2 class="module-title">
+                    <i class="material-icons">credit_card</i>
+                    Lectura de Tarjeta
+                </h2>
+                
+                <button id="scanCardBtn" class="btn" disabled>
+                    <i class="material-icons">nfc</i>
+                    Iniciar Escaneo NFC
+                </button>
+
+                <div id="cardInfo" class="card-info hidden">
+                    <h3>Información del Propietario</h3>
+                    <p><strong>Nombre:</strong> <span id="ownerName">-</span></p>
+                    <p><strong>Email:</strong> <span id="ownerEmail">-</span></p>
+                    <p><strong>Etiqueta:</strong> <span id="ownerLabel">-</span></p>
+                </div>
+
+                <div id="accessButtons" class="access-buttons hidden">
+                    <button id="entradaBtn" class="btn btn-success">
+                        <i class="material-icons">login</i>
+                        Entrada
+                    </button>
+                    <button id="salidaBtn" class="btn btn-danger">
+                        <i class="material-icons">logout</i>
+                        Salida
+                    </button>
+                </div>
+
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Procesando...</p>
+                </div>
+
+                <div id="status" class="status hidden"></div>
+            </div>
+
+            <!-- Module 2: Card Registration -->
+            <div class="module">
+                <h2 class="module-title">
+                    <i class="material-icons">person_add</i>
+                    Registro de Tarjeta
+                </h2>
+
+                <div class="form-group">
+                    <label class="form-label" for="wpUserLogin">Usuario WordPress</label>
+                    <input type="text" id="wpUserLogin" class="form-input" 
+                           placeholder="Ingrese el usuario de WordPress">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="label">Etiqueta Descriptiva</label>
+                    <input type="text" id="label" class="form-input" 
+                           placeholder="Ej: Vehículo principal, Invitado, etc.">
+                </div>
+
+                <button id="readCardForRegisterBtn" class="btn" disabled>
+                    <i class="material-icons">nfc</i>
+                    Leer Tarjeta para Registro
+                </button>
+
+                <div id="registerCardInfo" class="card-info hidden">
+                    <h3>Tarjeta Detectada</h3>
+                    <p><strong>UID:</strong> <span id="cardUid">-</span></p>
+                </div>
+
+                <button id="registerCardBtn" class="btn btn-success hidden">
+                    <i class="material-icons">save</i>
+                    Registrar Tarjeta
+                </button>
+
+                <div id="registerLoading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Registrando...</p>
+                </div>
+
+                <div id="registerStatus" class="status hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class NFCManager {
+            constructor() {
+                this.nfcSupported = false;
+                this.currentCardUid = null;
+                this.guardUser = 'Vigilante Principal'; // Puede ser configurado
+                this.init();
+            }
+
+            async init() {
+                await this.checkNFCSupport();
+                this.setupEventListeners();
+            }
+
+            async checkNFCSupport() {
+                const statusEl = document.getElementById('nfcStatus');
+                
+                if ('NDEFReader' in window) {
+                    this.nfcSupported = true;
+                    statusEl.className = 'nfc-status supported';
+                    statusEl.innerHTML = '<i class="material-icons">nfc</i> NFC soportado - Listo para usar';
+                    
+                    // Habilitar botones
+                    document.getElementById('scanCardBtn').disabled = false;
+                    document.getElementById('readCardForRegisterBtn').disabled = false;
+                } else {
+                    this.nfcSupported = false;
+                    statusEl.className = 'nfc-status not-supported';
+                    statusEl.innerHTML = '<i class="material-icons">error</i> NFC no soportado - Use Chrome Android';
+                }
+            }
+
+            setupEventListeners() {
+                // Botones del módulo de lectura
+                document.getElementById('scanCardBtn').addEventListener('click', () => this.scanCard());
+                document.getElementById('entradaBtn').addEventListener('click', () => this.logAccess('entrada'));
+                document.getElementById('salidaBtn').addEventListener('click', () => this.logAccess('salida'));
+
+                // Botones del módulo de registro
+                document.getElementById('readCardForRegisterBtn').addEventListener('click', () => this.readCardForRegister());
+                document.getElementById('registerCardBtn').addEventListener('click', () => this.registerCard());
+            }
+
+            async scanCard() {
+                if (!this.nfcSupported) {
+                    this.showStatus('NFC no está soportado en este dispositivo', 'error');
+                    return;
+                }
+
+                this.showLoading(true);
+                this.showStatus('Acerca la tarjeta NFC al dispositivo...', 'info');
+
+                try {
+                    const ndef = new NDEFReader();
+                    await ndef.scan();
+
+                    ndef.addEventListener('reading', async (event) => {
+                        const uid = this.getUIDFromMessage(event.message);
+                        if (uid) {
+                            this.currentCardUid = uid;
+                            await this.getCardOwner(uid);
+                        }
+                    });
+
+                    ndef.addEventListener('readingerror', (event) => {
+                        this.showStatus('Error al leer la tarjeta: ' + event.message, 'error');
+                        this.showLoading(false);
+                    });
+
+                } catch (error) {
+                    this.showStatus('Error al iniciar escaneo: ' + error.message, 'error');
+                    this.showLoading(false);
+                }
+            }
+
+            getUIDFromMessage(message) {
+                // Para tarjetas MIFARE Classic, el UID está en los primeros bytes
+                // Esta es una implementación simplificada
+                if (message.records && message.records.length > 0) {
+                    const record = message.records[0];
+                    if (record.data) {
+                        // Convertir bytes a hex string
+                        return Array.from(record.data)
+                            .map(b => b.toString(16).padStart(2, '0'))
+                            .join('').toUpperCase();
+                    }
+                }
+                return null;
+            }
+
+            async getCardOwner(uid) {
+                try {
+                    const response = await fetch(`https://api.bonaventurecclub.com/nfc_access/cards/owner/${uid}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.displayCardInfo(data);
+                        this.showStatus('Tarjeta leída correctamente', 'success');
+                    } else if (response.status === 404) {
+                        this.showStatus('Tarjeta no registrada en el sistema', 'error');
+                        this.hideCardInfo();
+                    } else {
+                        this.showStatus('Error al consultar información de la tarjeta', 'error');
+                        this.hideCardInfo();
+                    }
+                } catch (error) {
+                    this.showStatus('Error de conexión: ' + error.message, 'error');
+                    this.hideCardInfo();
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            displayCardInfo(data) {
+                document.getElementById('ownerName').textContent = data.name || 'No disponible';
+                document.getElementById('ownerEmail').textContent = data.email || 'No disponible';
+                document.getElementById('ownerLabel').textContent = data.label || 'No disponible';
+                
+                document.getElementById('cardInfo').classList.remove('hidden');
+                document.getElementById('accessButtons').classList.remove('hidden');
+            }
+
+            hideCardInfo() {
+                document.getElementById('cardInfo').classList.add('hidden');
+                document.getElementById('accessButtons').classList.add('hidden');
+            }
+
+            async logAccess(accessType) {
+                if (!this.currentCardUid) {
+                    this.showStatus('No hay tarjeta leída', 'error');
+                    return;
+                }
+
+                this.showLoading(true);
+
+                try {
+                    const response = await fetch('https://api.bonaventurecclub.com/nfc_access/access/log', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            card_uid: this.currentCardUid,
+                            access_type: accessType,
+                            guard_user: this.guardUser
+                        })
+                    });
+
+                    if (response.ok) {
+                        this.showStatus(`${accessType.charAt(0).toUpperCase() + accessType.slice(1)} registrada exitosamente`, 'success');
+                    } else {
+                        const errorData = await response.json();
+                        this.showStatus('Error al registrar acceso: ' + (errorData.message || 'Error desconocido'), 'error');
+                    }
+                } catch (error) {
+                    this.showStatus('Error de conexión: ' + error.message, 'error');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            async readCardForRegister() {
+                if (!this.nfcSupported) {
+                    this.showRegisterStatus('NFC no está soportado en este dispositivo', 'error');
+                    return;
+                }
+
+                this.showRegisterLoading(true);
+                this.showRegisterStatus('Acerca la tarjeta NFC al dispositivo...', 'info');
+
+                try {
+                    const ndef = new NDEFReader();
+                    await ndef.scan();
+
+                    ndef.addEventListener('reading', async (event) => {
+                        const uid = this.getUIDFromMessage(event.message);
+                        if (uid) {
+                            this.currentCardUid = uid;
+                            this.displayRegisterCardInfo(uid);
+                            this.showRegisterStatus('Tarjeta leída correctamente', 'success');
+                        }
+                    });
+
+                    ndef.addEventListener('readingerror', (event) => {
+                        this.showRegisterStatus('Error al leer la tarjeta: ' + event.message, 'error');
+                        this.showRegisterLoading(false);
+                    });
+
+                } catch (error) {
+                    this.showRegisterStatus('Error al iniciar escaneo: ' + error.message, 'error');
+                    this.showRegisterLoading(false);
+                }
+            }
+
+            displayRegisterCardInfo(uid) {
+                document.getElementById('cardUid').textContent = uid;
+                document.getElementById('registerCardInfo').classList.remove('hidden');
+                document.getElementById('registerCardBtn').classList.remove('hidden');
+                this.showRegisterLoading(false);
+            }
+
+            async registerCard() {
+                const wpUserLogin = document.getElementById('wpUserLogin').value.trim();
+                const label = document.getElementById('label').value.trim();
+
+                if (!wpUserLogin || !label || !this.currentCardUid) {
+                    this.showRegisterStatus('Por favor complete todos los campos y lea la tarjeta', 'error');
+                    return;
+                }
+
+                this.showRegisterLoading(true);
+
+                try {
+                    const response = await fetch('https://api.bonaventurecclub.com/nfc_access/cards/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            wp_user_login: wpUserLogin,
+                            card_uid: this.currentCardUid,
+                            label: label
+                        })
+                    });
+
+                    if (response.ok) {
+                        this.showRegisterStatus('Tarjeta registrada exitosamente', 'success');
+                        this.clearRegisterForm();
+                    } else {
+                        const errorData = await response.json();
+                        this.showRegisterStatus('Error al registrar tarjeta: ' + (errorData.message || 'Error desconocido'), 'error');
+                    }
+                } catch (error) {
+                    this.showRegisterStatus('Error de conexión: ' + error.message, 'error');
+                } finally {
+                    this.showRegisterLoading(false);
+                }
+            }
+
+            clearRegisterForm() {
+                document.getElementById('wpUserLogin').value = '';
+                document.getElementById('label').value = '';
+                document.getElementById('registerCardInfo').classList.add('hidden');
+                document.getElementById('registerCardBtn').classList.add('hidden');
+                this.currentCardUid = null;
+            }
+
+            showLoading(show) {
+                document.getElementById('loading').style.display = show ? 'block' : 'none';
+            }
+
+            showRegisterLoading(show) {
+                document.getElementById('registerLoading').style.display = show ? 'block' : 'none';
+            }
+
+            showStatus(message, type) {
+                const statusEl = document.getElementById('status');
+                statusEl.textContent = message;
+                statusEl.className = `status status-${type}`;
+                statusEl.classList.remove('hidden');
+            }
+
+            showRegisterStatus(message, type) {
+                const statusEl = document.getElementById('registerStatus');
+                statusEl.textContent = message;
+                statusEl.className = `status status-${type}`;
+                statusEl.classList.remove('hidden');
+            }
+        }
+
+        // Inicializar la aplicación cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            new NFCManager();
+        });
+
+        // Registrar el service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('SW registrado: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registro falló: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
